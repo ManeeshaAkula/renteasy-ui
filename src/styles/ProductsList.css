@@ -1,0 +1,213 @@
+.plist-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px 22px;
+}
+
+.plist-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plist-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+
+.btn.ghost {
+  background: #fff;
+  color: #111827;
+}
+
+.btn.danger {
+  background: #b91c1c;
+  color: #fff;
+  border-color: #b91c1c;
+}
+
+.plist-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 16px;
+}
+
+.plist-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.plist-table {
+  display: grid;
+  grid-auto-rows: minmax(56px, auto);
+}
+
+.plist-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 0.6fr 1fr 1.6fr 0.8fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.plist-row:first-child {
+  border-top: 0;
+}
+
+.plist-row-head {
+  background: #f9fafb;
+  font-weight: 700;
+}
+
+.plist-clickable {
+  cursor: pointer;
+}
+
+.plist-clickable:hover {
+  background: #fafafa;
+}
+
+.c {
+  font-size: 14px;
+}
+
+.c.t {
+  display: flex;
+  align-items: center;
+}
+
+.c.a {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.plist-titlecell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  background-size: cover;
+  background-position: center;
+}
+
+.meta .name {
+  font-weight: 600;
+}
+
+.meta .sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: #f3f4f6;
+}
+
+.icon-btn.danger {
+  border-color: #fecaca;
+}
+
+.icon-btn.danger:hover {
+  background: #fee2e2;
+}
+
+@media (max-width: 1100px) {
+  .plist-row {
+    grid-template-columns: 2fr 1fr 0.8fr 0.6fr 0.9fr 1.4fr 0.8fr;
+  }
+}
+
+@media (max-width: 900px) {
+
+  .plist-row,
+  .plist-row-head {
+    grid-template-columns: 2fr 1fr 0.8fr 0.8fr 1fr;
+  }
+
+  .plist-row .c:nth-child(2),
+  .plist-row .c:nth-child(6),
+  .plist-row-head .c:nth-child(2),
+  .plist-row-head .c:nth-child(6) {
+    display: none;
+  }
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+}
+
+.modal {
+  width: min(520px, 92vw);
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 20px;
+}
+
+.modal-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.modal-message {
+  margin: 0 0 16px;
+  color: #374151;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

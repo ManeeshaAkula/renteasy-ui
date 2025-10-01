@@ -1,0 +1,354 @@
+.rr-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px 22px;
+}
+
+.rr-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.rr-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.rr-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rr-tab {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #111827;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rr-tab.active {
+    background: #111827;
+    color: #fff;
+    border-color: #111827;
+}
+
+.rr-banner {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.rr-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.rr-body {
+  flex: 1;
+  max-height: calc(100vh - 260px); /* adjust offset to fit under header/nav */
+  overflow-y: auto;
+}
+
+/* keep header sticky when scrolling */
+.rr-head-row {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Shared grid template for header + rows */
+.rr-table {
+    --rr-cols: 2.3fr 1.8fr 1.2fr 0.9fr 0.9fr 1fr 0.9fr 1.2fr;
+}
+
+.rr-row,
+.rr-head-row {
+    display: grid;
+    grid-template-columns: var(--rr-cols);
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+}
+
+.rr-head-row {
+    background: #f9fafb;
+    font-weight: 700;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.rr-row {
+    border-top: 1px solid #f3f4f6;
+}
+
+.rr-head-row+.rr-row {
+    border-top: 0;
+}
+
+/* remove double border */
+
+.c {
+    font-size: 14px;
+}
+
+.c.money {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.rr-head-row .c.money {
+    text-align: right;
+}
+
+.c.actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.c.status {
+    display: flex;
+    align-items: center;
+}
+
+.rr-empty {
+    padding: 28px 16px;
+    color: #6b7280;
+}
+
+.rr-itemcell {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    background-size: cover;
+    background-position: center;
+}
+
+.meta .name {
+    font-weight: 600;
+}
+
+.meta .sub {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.meta .note {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #374151;
+}
+
+.muted {
+    color: #9ca3af;
+}
+
+.small {
+    font-size: 12px;
+}
+
+.rr-renter {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 10px;
+    align-items: center;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #111827;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+}
+
+.rr-renter .info {
+    display: grid;
+    gap: 4px;
+}
+
+.rr-renter .name,
+.rr-renter .phone,
+.rr-renter .place {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.rr-renter svg {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+}
+
+.rr-dates {
+    display: grid;
+    gap: 2px;
+}
+
+.total {
+    font-weight: 700;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.badge.pending {
+    background: #fff7ed;
+    color: #9a3412;
+    border: 1px solid #fde68a;
+}
+
+.badge.accepted {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.badge.declined {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.btn {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #111827;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn.success {
+    background: #10b981;
+    border-color: #10b981;
+    color: #fff;
+}
+
+.btn.danger {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+}
+
+.btn.ghost {
+    background: #fff;
+    color: #111827;
+}
+
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: grayscale(0.35) brightness(0.98);
+    pointer-events: none;
+}
+
+/* Responsive: keep header + rows in sync */
+@media (max-width: 980px) {
+
+    .rr-row,
+    .rr-head-row {
+        grid-template-columns: 2.2fr 1.8fr 1.1fr 0.9fr 1fr 1fr;
+    }
+
+    /* hide Deposit + Status */
+    .rr-row .c.money:nth-of-type(5),
+    .rr-head-row .c.money:nth-of-type(5),
+    .rr-row .c.status,
+    .rr-head-row .c.status {
+        display: none;
+    }
+}
+
+@media (max-width: 720px) {
+
+    .rr-row,
+    .rr-head-row {
+        grid-template-columns: 1.8fr 1.6fr 1fr 1fr;
+    }
+
+    /* hide Price/Day + Deposit + Dates */
+    .rr-row .c.money:nth-of-type(4),
+    .rr-head-row .c.money:nth-of-type(4),
+    .rr-row .c.money:nth-of-type(5),
+    .rr-head-row .c.money:nth-of-type(5),
+    .rr-row .c.dates,
+    .rr-head-row .c.dates {
+        display: none;
+    }
+
+    .c.actions {
+        justify-content: flex-start;
+    }
+}
+
+/* Modal */
+.rr-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: grid;
+    place-items: center;
+    z-index: 60;
+}
+
+.rr-modal {
+    width: min(520px, 92vw);
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    padding: 20px;
+}
+
+.rr-modal-title {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.rr-modal-message {
+    margin: 0 0 16px;
+    color: #374151;
+}
+
+.rr-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
