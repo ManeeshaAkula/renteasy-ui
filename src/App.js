@@ -1,67 +1,168 @@
-// src/App.js
-import React, { useEffect, useState } from "react";
+// App.jsx (excerpt)
+import React, { useState, useEffect } from 'react';
+import { RoleProvider } from "./context/RoleContext";
+import RoleRoute from "./components/RoleRoute";
+import DashboardLayout from "./components/DashboardLayout";
 import { Routes, Route, Navigate } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import './styles/App.css';
+import { isAuthenticated, getUserType, logout } from './services/api.js';
+import ProtectedRoute from './components/ProtectedRoute';
 
+
+// Lender pages
 import Dashboard from "./components/Dashboard";
-import DashboardLayout from "./components/DashboardLayout";
-import ProductsList from "./components/ProductsList";
 import Product from "./components/Product";
+import ProductsList from "./components/ProductsList";
 import RentalRequest from "./components/RentalRequest";
+import MyProfile from "./components/MyProfile";
 
-import { isAuthenticated, logout } from "./services/api";
-// import { getUserId } from "./services/auth";
-import "./styles/App.css";
+// Renter pages
+import RenterDashboard from "./components/RenterDashboard";
+import RenterProducts from "./components/RenterProducts";
+import RenterCart from "./components/RenterCart";
+import RenterProfile from "./components/RenterProfile";
 
-function App() {
+export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userType, setUserType] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const authenticated = isAuthenticated();
-    if (authenticated) setIsLoggedIn(true);
+    const storedUserType = getUserType();
+
+    if (authenticated) {
+      setIsLoggedIn(true);
+      setUserType(storedUserType);
+    }
+
     setIsLoading(false);
   }, []);
 
-  const handleSuccessfulAuth = () => setIsLoggedIn(true);
-  const handleLogout = () => { logout(); setIsLoggedIn(false); };
+  const handleSuccessfulAuth = (response) => {
+    setTimeout(() => {
+      setIsLoggedIn(true);
+      setUserType(response.userType || "Lender");
+    }, 100);
+  };
 
-  if (isLoading) return <div className="loading">Loading...</div>;
+  const handleLogout = () => {
+    logout();
+    setIsLoggedIn(false);
+    setUserType(null);
+  };
+
+  if (isLoading) {
+    return <div className="loading">Loading...</div>;
+  }
 
   return (
-    <div className="App">
+    <RoleProvider>
       <Routes>
-        <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onSuccessfulAuth={handleSuccessfulAuth} />} />
-
-        {/* Shell with SideNav + Header always visible */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/products" element={<ProtectedRoute><ProductsList /></ProtectedRoute>} />
-          <Route path="/product" element={<ProtectedRoute><Product sellerId="1234" /></ProtectedRoute>} />
-          <Route path="/product/:id" element={<ProtectedRoute><Product sellerId="1234" /></ProtectedRoute>} />
+        <Route path="/register" element={<Register userType={userType} setUserType={setUserType} />} /><Route element={<DashboardLayout />}>
+          {/* LENDER */}
           <Route
-            path="/rental-requests"
+            path="/dashboard"
             element={
               <ProtectedRoute>
-                <RentalRequest onLogout={handleLogout} />
+                {userType === "Renter" ? (
+                  <RenterDashboard onLogout={handleLogout} />
+                ) : (
+                  <Dashboard onLogout={handleLogout} />
+                )}
+              </ProtectedRoute>
+
+            }
+          />
+
+          <Route
+            path="my-profile"
+            element={
+
+              <ProtectedRoute>
+                {userType === "Buyer" ? (
+                  <RenterProfile onLogout={handleLogout} />
+                ) : (
+                  <MyProfile onLogout={handleLogout} />
+                )}
               </ProtectedRoute>
             }
           />
-        </Route>
 
-        <Route path="*" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+          <Route
+            path="/product"
+            element={
+              <RoleRoute allow={["LENDER"]}>
+                <Product />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/product/:id"
+            element={
+              <RoleRoute allow={["LENDER"]}>
+                <Product />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/products"
+            element={
+              <RoleRoute allow={["LENDER"]}>
+                <ProductsList />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/rental-requests"
+            element={
+              <RoleRoute allow={["LENDER"]}>
+                <RentalRequest />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/my-profile"
+            element={
+              <RoleRoute allow={["LENDER"]}>
+                <MyProfile />
+              </RoleRoute>
+            }
+          />
+
+          {/* RENTER */}
+          <Route
+            path="/renter/dashboard"
+            element={
+              <RoleRoute allow={["BUYER"]}>
+                <RenterDashboard onLogout={handleLogout} />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/renter/products"
+            element={
+              <RoleRoute allow={["BUYER"]}>
+                <RenterProducts />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/renter/cart"
+            element={
+              <RoleRoute allow={["BUYER"]}>
+                <RenterCart />
+              </RoleRoute>
+            }
+          />
+
+
+          {/* Default */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
       </Routes>
-    </div>
+    </RoleProvider>
   );
 }
-
-export default App;

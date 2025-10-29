@@ -46,11 +46,11 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 export const setAuthToken = (token) => {
     if (token) {
         console.log('Setting auth token:', token.substring(0, 20) + '...');
-        localStorage.setItem('token', token);
+        localStorage.setItem('authToken', token);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
         console.log('Clearing auth token');
-        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
         delete api.defaults.headers.common['Authorization'];
     }
 };
@@ -65,19 +65,22 @@ export const login = async (credentials) => {
     try {
         const authRequest = {
             username: credentials.username,
-            password: credentials.password
+            password: credentials.password,
+            role: credentials.role
         };
         console.log('Sending authentication request:', authRequest);
-        let response = {
-            data: {
-                data: {
-                    token: "dummy-token",
-                    userId: "user001"
-                }
-            }
-        };
+        let response;
+        // let response = {
+        //     data: {
+        //         data: {
+        //             token: "dummy-token",
+        //             userId: "user001"
+        //         }
+        //     }
+        // };
 
-        // response = await api.post('/api/auth/login', authRequest);
+        response = await api.post('/user/login', authRequest);
+        console.log(".........response in api", response)
         if (response?.data && response.data?.data?.token) {
             const token = response.data.data.token || response.data.data.jwt;
             localStorage.setItem('token', token);
@@ -110,7 +113,8 @@ export const login = async (credentials) => {
 export const register = async (userData) => {
     try {
         // Use direct API call for consistency
-        const response = await api.post('/api/users/register', userData);
+        const response = await api.post('/user/create', userData);
+        console.log("........ signupresponse in api", response)
         // Handle successful response
         if (response.data && response.data.token) {
             // Store userId if it's returned in the response
@@ -127,6 +131,8 @@ export const register = async (userData) => {
 
 // Logout function
 export const logout = () => {
+    localStorage.removeItem("role"); // if you store role
+    localStorage.removeItem("userId");
     setAuthToken(null);
     // Redirect to login page
     window.location.href = '/login';
@@ -134,12 +140,12 @@ export const logout = () => {
 
 // Check if user is authenticated
 export const isAuthenticated = () => {
-    return !!localStorage.getItem('token');
+    return !!localStorage.getItem('authToken');
 };
 
 // Get current user type
 export const getUserType = () => {
-    return localStorage.getItem('userType') || 'HCP';
+    return localStorage.getItem('role') || 'LENDER';
 };
 
 // Get current user ID (if you store it)
@@ -156,6 +162,32 @@ export const getUserId = () => {
 //         throw error;
 //     }
 // };
+
+export const getRoleIdByCode = async (code) => {
+    try {
+        console.log("........code in api", code)
+        const response = await api.get(`/reference-data/getByCode/${code}`, code);
+        console.log("........ response in api role", response)
+        return response.data;
+    } catch (error) {
+        console.log("...... error in role", error)
+        console.error('Error while fetching user details:', error);
+        throw error;
+    }
+};
+
+export const createProduct = async (productData) => {
+    try {
+        console.log("........code in api", productData)
+        const response = await api.post(`/product/create`, productData);
+        console.log("........ response in api role", response)
+        return response.data;
+    } catch (error) {
+        console.log("...... error in role", error)
+        console.error('Error while adding product details:', error);
+        throw error;
+    }
+};
 
 
 

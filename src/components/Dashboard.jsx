@@ -19,10 +19,10 @@ function QuickAction({ label, onClick }) {
 export default function HomeDashboard() {
   const stats = useMemo(
     () => [
-      { label: "Total Products", value: "12", sub: "3 inactive" },
-      { label: "Pending Requests", value: "4", sub: "Review now" },
-      { label: "Ongoing Rentals", value: "3", sub: "2 end this week" },
-      { label: "Monthly Earnings", value: "$1,280", sub: "↑ 12% vs last month" },
+      { label: "Total Products", value: "12"},
+      { label: "Pending Requests", value: "4"},
+      { label: "Ongoing Rentals", value: "3"},
+      { label: "Monthly Earnings", value: "$1,280"},
     ],
     []
   );
@@ -38,6 +38,7 @@ export default function HomeDashboard() {
 
   return (
     <div className="dh-content">
+      {/* <h1 className="dh-title">Dashboard</h1> */}
       {/* Stat cards */}
       <section className="dh-stats">
         {stats.map((s, i) => (
@@ -46,7 +47,7 @@ export default function HomeDashboard() {
       </section>
 
       {/* Quick Actions */}
-      <section className="dh-row">
+      {/* <section className="dh-row">
         <div className="dh-col">
           <div className="dh-card">
             <div className="dh-card-head">
@@ -59,7 +60,7 @@ export default function HomeDashboard() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Top Products (reuses ProductsList, no actions) */}
       <section className="dh-row">

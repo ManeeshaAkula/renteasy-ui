@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import "../styles/Login.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
-import { login, setAuthToken } from "../services/api";
+import { login, setAuthToken, getRoleIdByCode } from "../services/api";
+import { useRole } from "../context/RoleContext";
 import AuthLayout from "./AuthLayout";
 
 function Login({ onSuccessfulAuth }) {
     const [showPassword, setShowPassword] = useState(false);
+    const { setRole, setUserId } = useRole();
     const [formData, setFormData] = useState({ username: "", password: "", role: "" });
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
@@ -31,9 +33,22 @@ function Login({ onSuccessfulAuth }) {
         setErrors(validationErrors);
         if (Object.keys(validationErrors).length > 0) return;
         try {
+            console.log(".........formData in login", formData)
+            const roleData = await getRoleIdByCode(formData.role.toUpperCase());
+            console.log("............ roledata in login", roleData)
+            formData.role = roleData.data.id;
+            console.log("......... after formData in login", formData)
+
             const response = await login(formData);
+            console.log("......... responsein login", response)
             if (response?.token || response?.jwt) {
                 setAuthToken(response.token || response.jwt);
+                const r =
+                    (response.role_code && response.role_code.toUpperCase()) ||
+                    (response.user?.role_name && response.user.role_name.toUpperCase()) ||
+                    "LENDER";
+                setRole(r);
+                setUserId(response.user?.id || "");
                 if (onSuccessfulAuth) onSuccessfulAuth(response);
                 navigate("/dashboard");
             } else {
@@ -43,6 +58,8 @@ function Login({ onSuccessfulAuth }) {
                 }));
             }
         } catch (error) {
+            console.log("........ error in login", error);
+            console.error("Error in login", error);
             setErrors((prev) => ({
                 ...prev,
                 loginError: "Invalid credentials. Please verify your username and password.",
@@ -119,7 +136,7 @@ function Login({ onSuccessfulAuth }) {
                                 Select user type
                             </option>
                             <option value="lender">Lender</option>
-                            <option value="renter">Renter</option>
+                            <option value="buyer">Buyer</option>
                         </select>
                         {errors.role && <span className="error-symbol">❗</span>}
                         {errors.role && (

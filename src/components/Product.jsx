@@ -4,7 +4,25 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import "../styles/Product.css";
 import { FiEdit2 } from "react-icons/fi";
-// import { getUserId } from "../services/auth";
+import { createProduct } from "../services/api";
+
+function Field({ name, label, type = "text", className, value, onChange, error, isEditing }) {
+  return (
+    <div className={`field ${className || ""}`}>
+      <label>{label}</label>
+      {isEditing ? (
+        type === "textarea" ? (
+          <textarea value={value ?? ""} onChange={(e) => onChange(name, e.target.value)} rows={4} />
+        ) : (
+          <input type={type} value={value ?? ""} onChange={(e) => onChange(name, e.target.value)} />
+        )
+      ) : (
+        <div className="read-value">{value || "—"}</div>
+      )}
+      {error ? <span className="err">{error}</span> : null}
+    </div>
+  );
+}
 
 export default function Product({ sellerId: sellerIdProp = "" }) {
   const navigate = useNavigate();
@@ -14,7 +32,6 @@ export default function Product({ sellerId: sellerIdProp = "" }) {
 
   const navProduct = location.state?.product || null;
   const navMode = location.state?.mode || null;
-
   const effectiveSellerId = useMemo(() => sellerIdProp || "1234" || "", [sellerIdProp]);
 
   const [form, setForm] = useState({
@@ -31,6 +48,7 @@ export default function Product({ sellerId: sellerIdProp = "" }) {
     location_state: "",
     location_zip: ""
   });
+
   const [original, setOriginal] = useState(null);
   const [isEditing, setIsEditing] = useState(!isEditRoute || navMode === "edit");
   const [imgFile, setImgFile] = useState(null);
@@ -66,13 +84,11 @@ export default function Product({ sellerId: sellerIdProp = "" }) {
 
     (async () => {
       if (!isEditRoute) {
-        // create page
         setForm((p) => ({ ...p, seller_id: effectiveSellerId }));
         return;
       }
 
       if (navProduct) {
-        // edit with router state
         setFromData(navProduct);
         setIsEditing(navMode === "edit");
         setSkipFetch(true);
@@ -97,7 +113,9 @@ export default function Product({ sellerId: sellerIdProp = "" }) {
     return () => { cancel = true; };
   }, [isEditRoute, id, navProduct, navMode, effectiveSellerId, skipFetch]);
 
-  const onChange = (field, value) => setForm((p) => ({ ...p, [field]: value }));
+  const onChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const onImageFile = (e) => {
     const file = e.target.files?.[0];
@@ -144,10 +162,11 @@ export default function Product({ sellerId: sellerIdProp = "" }) {
         const fd = new FormData();
         Object.entries(buildPayload()).forEach(([k, v]) => fd.append(k, v));
         fd.append("image", imgFile);
+
         if (isEditRoute) {
           await axios.put(`/api/products/${id}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
         } else {
-          await axios.post(`/api/products`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+          await createProduct(fd);
         }
       } else {
         const payload = { ...buildPayload(), image_url: form.image_url.trim() };
@@ -176,22 +195,6 @@ export default function Product({ sellerId: sellerIdProp = "" }) {
       navigate("/products");
     }
   };
-
-  const Field = ({ name, label, type = "text", className }) => (
-    <div className={`field ${className || ""}`}>
-      <label>{label}</label>
-      {isEditing ? (
-        type === "textarea" ? (
-          <textarea value={form[name] ?? ""} onChange={(e) => onChange(name, e.target.value)} rows={4} />
-        ) : (
-          <input type={type} value={form[name] ?? ""} onChange={(e) => onChange(name, e.target.value)} />
-        )
-      ) : (
-        <div className="read-value">{form[name] || "—"}</div>
-      )}
-      {errors[name] ? <span className="err">{errors[name]}</span> : null}
-    </div>
-  );
 
   return (
     <div className="product-wrap product-scroll">
@@ -223,36 +226,19 @@ export default function Product({ sellerId: sellerIdProp = "" }) {
             <div className="read-value">{effectiveSellerId || "—"}</div>
             {errors.seller_id ? <span className="err">{errors.seller_id}</span> : null}
           </div>
-          <Field name="title" label="Title" />
-          <Field name="description" label="Description" type="textarea" className="span-2" />
-          <Field name="category_id" label="Category ID" />
-          <Field name="price_per_day" label="Price/Day" type="number" />
-          <Field name="quantity" label="Quantity" type="number" />
-          <Field name="deposit" label="Deposit" type="number" />
-          <Field name="location_city" label="City" />
-          <Field name="location_state" label="State" />
-          <Field name="location_zip" label="ZIP" />
+
+          <Field name="title" label="Title" value={form.title} onChange={onChange} error={errors.title} isEditing={isEditing} />
+          <Field name="description" label="Description" type="textarea" className="span-2" value={form.description} onChange={onChange} error={errors.description} isEditing={isEditing} />
+          <Field name="category_id" label="Category ID" value={form.category_id} onChange={onChange} error={errors.category_id} isEditing={isEditing} />
+          <Field name="price_per_day" label="Price/Day" type="number" value={form.price_per_day} onChange={onChange} error={errors.price_per_day} isEditing={isEditing} />
+          <Field name="quantity" label="Quantity" type="number" value={form.quantity} onChange={onChange} error={errors.quantity} isEditing={isEditing} />
+          <Field name="deposit" label="Deposit" type="number" value={form.deposit} onChange={onChange} error={errors.deposit} isEditing={isEditing} />
+          <Field name="location_city" label="City" value={form.location_city} onChange={onChange} error={errors.location_city} isEditing={isEditing} />
+          <Field name="location_state" label="State" value={form.location_state} onChange={onChange} error={errors.location_state} isEditing={isEditing} />
+          <Field name="location_zip" label="ZIP" value={form.location_zip} onChange={onChange} error={errors.location_zip} isEditing={isEditing} />
         </div>
 
         <div className="image-section">
-          {/* <div className="field">
-            <label>Image URL</label>
-            {isEditing ? (
-              <input
-                name="image_url"
-                value={form.image_url}
-                onChange={(e) => {
-                  setImgFile(null);
-                  setImgPreview(e.target.value);
-                  onChange("image_url", e.target.value);
-                }}
-              />
-            ) : (
-              <div className="read-value">{form.image_url || "—"}</div>
-            )}
-            {errors.image_url && !imgFile ? <span className="err">{errors.image_url}</span> : null}
-          </div> */}
-          {/* <div className="image-or">or</div> */}
           <div className="field">
             <label>Upload Image</label>
             <input type="file" accept="image/*" onChange={onImageFile} disabled={!isEditing} />
