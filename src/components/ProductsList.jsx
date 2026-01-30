@@ -1,16 +1,10 @@
 // src/components/ProductsList.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
 import "../styles/ProductsList.css";
+import { getProductsList, getCategoryByCode } from "../services/api";
 
-/**
- * Props:
- * - items?: array of products to display (if omitted, uses MOCK)
- * - onDelete?: async (id) => void  (optional; if omitted, deletes locally)
- * - embedded?: boolean (hides header actions etc.)
- * - showActions?: boolean (defaults true)
- */
 export default function ProductsList({
   items: itemsProp = null,
   onDelete = null,
@@ -18,45 +12,78 @@ export default function ProductsList({
   showActions = true
 }) {
   const navigate = useNavigate();
-
-  const MOCK = [
-    {
-      id: "p1",
-      title: "Canon DSLR Camera",
-      description: "24MP body with 18-55mm lens.",
-      image_url: "https://images.unsplash.com/photo-1519183071298-a2962be96f83?w=600&q=80",
-      category_id: "ELECTRONICS",
-      price_per_day: 30,
-      quantity: 4,
-      deposit: 100,
-      location_city: "Los Angeles",
-      location_state: "CA",
-      location_zip: "90001",
-    },
-    {
-      id: "p2",
-      title: "Cordless Drill",
-      description: "18V brushless motor, 2 batteries.",
-      image_url: "https://images.unsplash.com/photo-1562158070-0eb2b0d4f5c5?w=600&q=80",
-      category_id: "TOOLS",
-      price_per_day: 12.5,
-      quantity: 7,
-      deposit: 40,
-      location_city: "Austin",
-      location_state: "TX",
-      location_zip: "73301",
-    },
-  ];
-
-  const [rows, setRows] = useState(itemsProp ?? MOCK);
+  const location = useLocation();
+  const [rows, setRows] = useState(itemsProp ?? []);
+  const [loading, setLoading] = useState(!itemsProp);
+  const [error, setError] = useState("");
   const [confirm, setConfirm] = useState({ open: false, id: null, title: "" });
+  const [categoryMap, setCategoryMap] = useState({});
+
+  useEffect(() => {
+    let cancel = false;
+    if (itemsProp) return;
+    (async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const params = new URLSearchParams(location.search);
+        const q = (params.get("q") || "").trim();
+        const res = await getProductsList(q);
+        const data = Array.isArray(res?.data?.data)
+          ? res.data.data
+          : Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+          ? res
+          : [];
+        if (!cancel) setRows(data);
+      } catch {
+        if (!cancel) setError("Failed to load products.");
+      } finally {
+        if (!cancel) setLoading(false);
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [itemsProp, location.search]);
 
   useEffect(() => {
     if (itemsProp) setRows(itemsProp);
   }, [itemsProp]);
 
+  useEffect(() => {
+    if (!rows || rows.length === 0) return;
+    const filteredProducts = rows.filter(p => Number(p.quantity) >= 3);
+    localStorage.setItem(
+      "productsWithHighQuantity",
+      JSON.stringify(filteredProducts)
+    );
+  }, [rows]);
+
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      try {
+        const res = await getCategoryByCode("PRODUCTS");
+        const list = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+          ? res
+          : [];
+        const map = {};
+        list.forEach(c => {
+          if (c.id) map[String(c.id)] = c.name || c.value || c.label || "";
+        });
+        if (!cancel) setCategoryMap(map);
+      } catch {}
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, []);
+
   const gotoEdit = (product) => {
-    // pass full product via state so Product can prefill instantly (no fetch)
     navigate(`/product/${product.id}`, {
       state: { product, mode: "edit", from: "products-list" },
     });
@@ -75,9 +102,7 @@ export default function ProductsList({
     try {
       if (onDelete) await onDelete(id);
       setRows(prev => prev.filter(r => r.id !== id));
-    } catch (e) {
-      console.error("Delete failed", e);
-    }
+    } catch { }
   };
 
   const gridCols = showActions
@@ -97,7 +122,11 @@ export default function ProductsList({
       )}
 
       <div className="plist-card">
-        {rows.length === 0 ? (
+        {loading ? (
+          <div className="plist-empty">Loading…</div>
+        ) : error ? (
+          <div className="plist-empty">{error}</div>
+        ) : rows.length === 0 ? (
           <div className="plist-empty">No products found.</div>
         ) : (
           <div className="plist-table" role="table" aria-label="Products">
@@ -128,10 +157,14 @@ export default function ProductsList({
                     </div>
                   </div>
                 </div>
-                <div className="c" role="cell">{p.category_id}</div>
-                <div className="c" role="cell">${Number(p.price_per_day).toFixed(2)}</div>
+
+                <div className="c" role="cell">
+                  {categoryMap[p.category_id] || p.category_id}
+                </div>
+
+                <div className="c" role="cell">${Number(p.price_per_day ?? 0).toFixed(2)}</div>
                 <div className="c" role="cell">{p.quantity}</div>
-                <div className="c" role="cell">${Number(p.deposit).toFixed(2)}</div>
+                <div className="c" role="cell">${Number(p.deposit ?? 0).toFixed(2)}</div>
                 <div className="c" role="cell">
                   {p.location_city}, {p.location_state} {p.location_zip}
                 </div>

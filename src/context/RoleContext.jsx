@@ -13,30 +13,76 @@ function decodeJwt(token) {
 }
 
 export function RoleProvider({ children }) {
-  const [role, setRole] = useState(() => (localStorage.getItem("role") || "LENDER").toUpperCase());
+  const [role, setRole] = useState(() =>
+    (localStorage.getItem("role") || "LENDER").toUpperCase()
+  );
+
   const [userId, setUserId] = useState(() => localStorage.getItem("userId") || "");
 
+  const [userName, setUserName] = useState(() => localStorage.getItem("userName"));
+  //   if (!raw) return { first_name: "", last_name: "" };
+  //   try {
+  //     const parsed = JSON.parse(raw);
+  //     return {
+  //       first_name: parsed?.first_name || "",
+  //       last_name: parsed?.last_name || ""
+  //     };
+  //   } catch {
+  //     return { first_name: "", last_name: "" };
+  //   }
+  // });
+
   useEffect(() => {
-    localStorage.setItem("role", role);
+    localStorage.setItem("role", role || "");
   }, [role]);
 
   useEffect(() => {
-    if (userId) localStorage.setItem("userId", userId);
+    localStorage.setItem("userId", userId || "");
   }, [userId]);
+
+  useEffect(() => {
+    localStorage.setItem("userName", JSON.stringify(userName));
+  }, [userName]);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (!token) return;
     const data = decodeJwt(token);
     if (!data) return;
-    if (!userId && data.id) setUserId(data.id);
-    const fromToken =
+// console.log(".........data in decoded token", data)
+    if (!userId && data.id) setUserId(String(data.id));
+
+    const fromTokenRole =
       (data.role_code && String(data.role_code).toUpperCase()) ||
       (data.role_name && String(data.role_name).toUpperCase());
-    if (fromToken && fromToken !== role) setRole(fromToken);
-  }, []); // run once on mount
 
-  const value = useMemo(() => ({ role, setRole, userId, setUserId }), [role, userId]);
+    if (fromTokenRole && fromTokenRole !== role) setRole(fromTokenRole);
+
+    const fn =
+      data.first_name || data.firstname || data.given_name || data.firstName || "";
+    const ln =
+      data.last_name || data.lastname || data.family_name || data.lastName || "";
+
+    if ((fn || ln) && (!userName.first_name && !userName.last_name)) {
+      setUserName({ first_name: String(fn), last_name: String(ln) });
+    }
+  }, []);
+
+  const clearAuth = () => {
+    setRole("");
+    setUserId("");
+    setUserName({ first_name: "", last_name: "" });
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("authToken");
+  };
+
+  const value = useMemo(
+    () => ({ role, setRole, userId, setUserId, userName, setUserName, clearAuth }),
+    [role, userId, userName]
+  );
+
   return <RoleCtx.Provider value={value}>{children}</RoleCtx.Provider>;
 }
 

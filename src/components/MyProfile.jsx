@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../styles/MyProfile.css";
-// Wire these to your real services
-// import { getMyProfile, updateMyProfile } from "../services/api";
-// import { getUserId } from "../services/auth";
+import { getUserById, updateUserById } from "../services/api";
 
 export default function MyProfile() {
-    const userId = useMemo(() => localStorage.getItem("userId") || "1234", []);
+    const userId = useMemo(() => localStorage.getItem("userId"));
     const [profile, setProfile] = useState(null);
     const [form, setForm] = useState({
         first_name: "",
@@ -19,26 +17,7 @@ export default function MyProfile() {
         zip: "",
     });
 
-    async function getMyProfileStub(userId) {
-        return {
-            data: {
-                id: userId,
-                first_name: "Priya",
-                middle_name: "",
-                last_name: "Sharma",
-                gender: "FEMALE",
-                mobile: "+1 555-012-7788",
-                email_id: "priya@example.com",
-                city: "San Jose",
-                state: "CA",
-                zip: "95134",
-            },
-        };
-    }
-    async function updateMyProfileStub(userId, payload) {
-        // simulate server ok
-        return { data: { ...payload, id: userId } };
-    }
+    // console.log("......... userId in my profile", userId);
 
     const GENDER_OPTIONS = [
         { id: "", name: "Select gender" },
@@ -60,8 +39,7 @@ export default function MyProfile() {
         (async () => {
             try {
                 setLoading(true);
-                // const res = await getMyProfile(userId);
-                const res = await getMyProfileStub(userId);
+                const res = await getUserById(userId);
                 const data = res?.data || {};
                 if (!active) return;
                 setProfile(data);
@@ -107,8 +85,7 @@ export default function MyProfile() {
         try {
             setSaving(true);
             setBanner({ type: "", text: "" });
-            // const res = await updateMyProfile(userId, form);
-            const res = await updateMyProfileStub(userId, form);
+            const res = await updateUserById(userId, form);
             const saved = res?.data || {};
             setProfile(saved);
             setForm({
@@ -149,9 +126,12 @@ export default function MyProfile() {
         setErrors({});
         setEditing(false);
     };
-
+    // localStorage.removeItem("userName");
     const initials = ((form.first_name?.[0] || "") + (form.last_name?.[0] || "")).toUpperCase() || "U";
-
+    // {form.first_name} {form.middle_name ? `${form.middle_name} ` : ""}{form.last_name}
+    const userName = ((form.first_name) + " " + (form.last_name));
+    // console.log("..........userName in my profile", userName)
+    localStorage.setItem("userName", userName);
     if (loading) {
         return <div className="mp-wrap"><div className="mp-loading">Loading profile…</div></div>;
     }
@@ -181,18 +161,16 @@ export default function MyProfile() {
             ) : null}
 
             <div className="mp-card">
-                {/* Identity block */}
                 <div className="mp-identity">
                     <div className="mp-avatar">{initials}</div>
                     <div className="mp-id-meta">
                         <div className="mp-name">
                             {form.first_name} {form.middle_name ? `${form.middle_name} ` : ""}{form.last_name}
                         </div>
-                        <div className="mp-sub">{profile?.id ? `User ID: ${profile.id}` : ""}</div>
+                        {/* <div className="mp-sub">{profile?.id ? `User ID: ${profile.id}` : ""}</div> */}
                     </div>
                 </div>
 
-                {/* Form */}
                 <div className="mp-form">
                     <div className="mp-grid">
                         <Field
@@ -262,7 +240,6 @@ export default function MyProfile() {
                     </div>
                 </div>
 
-                {/* Sticky actions for small screens (optional) */}
                 {editing && (
                     <div className="mp-sticky-actions">
                         <button className="btn ghost" onClick={onCancel} disabled={saving}>Discard</button>

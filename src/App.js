@@ -25,16 +25,19 @@ import RenterCart from "./components/RenterCart";
 import RenterProfile from "./components/RenterProfile";
 
 export default function App() {
+  const [userId, setUserId] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const authenticated = isAuthenticated();
     const storedUserType = getUserType();
+    const storedUserId = localStorage.getItem("userId");
 
     if (authenticated) {
       setIsLoggedIn(true);
       setUserType(storedUserType);
+      setUserId(storedUserId);
     }
 
     setIsLoading(false);
@@ -44,8 +47,10 @@ export default function App() {
     setTimeout(() => {
       setIsLoggedIn(true);
       setUserType(response.userType || "Lender");
+      setUserId(response.userId || localStorage.getItem("userId"));
     }, 100);
   };
+      console.log("............. response in successful auth", userType)
 
   const handleLogout = () => {
     logout();
@@ -67,7 +72,7 @@ export default function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                {userType === "Renter" ? (
+                {userType === "BUYER" ? (
                   <RenterDashboard onLogout={handleLogout} />
                 ) : (
                   <Dashboard onLogout={handleLogout} />
@@ -82,7 +87,7 @@ export default function App() {
             element={
 
               <ProtectedRoute>
-                {userType === "Buyer" ? (
+                {userType === "BUYER" ? (
                   <RenterProfile onLogout={handleLogout} />
                 ) : (
                   <MyProfile onLogout={handleLogout} />
@@ -95,7 +100,7 @@ export default function App() {
             path="/product"
             element={
               <RoleRoute allow={["LENDER"]}>
-                <Product />
+                <Product userId={userId}/>
               </RoleRoute>
             }
           />
@@ -103,7 +108,7 @@ export default function App() {
             path="/product/:id"
             element={
               <RoleRoute allow={["LENDER"]}>
-                <Product />
+                <Product userId={userId}/>
               </RoleRoute>
             }
           />
@@ -111,7 +116,7 @@ export default function App() {
             path="/products"
             element={
               <RoleRoute allow={["LENDER"]}>
-                <ProductsList />
+                <ProductsList userId={userId}/>
               </RoleRoute>
             }
           />
